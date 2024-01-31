@@ -5,7 +5,6 @@ import constants
 class Block:
     def __init__(self):
         self.color = constants.COLORS[random.choice(list(constants.COLORS))]
-        print(self.color)
         self.gridposition = [0, 5]
         self.shapeindex = random.randint(0, 5)
         self.current_rotation = 0
@@ -63,7 +62,6 @@ class Block:
     def rotate(self):
         self.current_rotation = self.current_rotation + 1 if self.current_rotation < 3 else 0
         self.shape = self.get_shape(self.shapeindex)[self.current_rotation]
-        print(self.current_rotation)
 
 
     def move_down(self):
@@ -83,7 +81,6 @@ class Block:
                 return True
 
     def check_horizontal_lock(self, grid):
-        print(self.gridposition[1])
         for coord in self.shape:
             if self.gridposition[1] == 0:
                 return "left"
@@ -105,7 +102,6 @@ class Grid:
         self.rows = 20
         self.columns = 10
         self.grid = [[0 for i in range(self.columns)] for u in range(self.rows)]
-        print(self.grid)
 
     def draw(self, screen):
         for i in range(self.rows):
@@ -115,37 +111,74 @@ class Grid:
                                      (u * 30, i * 30 + 30, 30, 30))
                     pygame.draw.rect(screen, (255, 255, 255),
                                      (u * 30 + 1, i * 30 + 30 - 1, 28, 28))
-                    print(i, u)
 
     def add_to_grid(self, block):
         for coord in block.shape:
             self.grid[block.gridposition[0]+coord[0]][block.gridposition[1]+coord[1]] = 1
-        print(self.grid)
 
 
-block = Block()
-grid = Grid()
-running = True
-screen = pygame.display.set_mode((300, 630))
-clock = pygame.time.Clock()
-while running:
-    screen.blit(pygame.transform.scale(pygame.image.load("background.png"), (1500, 750)), (0, 0))
-    block.move_down()
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_RIGHT] and block.check_horizontal_lock(grid) != "right":
-        block.move_right()
-    if keys[pygame.K_LEFT] and block.check_horizontal_lock(grid) != "left":
-        block.move_left()
-    if keys[pygame.K_UP]:
-        block.rotate()
-    if block.check_lock(grid):
-        grid.add_to_grid(block)
-        block.reset()
-    running = block.check_game_over(grid)
-    grid.draw(screen)
-    block.draw(screen)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-    pygame.display.flip()
-    clock.tick(5)
+class Game:
+    def __init__(self):
+        pygame.init()
+        self.screen = pygame.display.set_mode((300, 630))
+        self.clock = pygame.time.Clock()
+        self.running = True
+        self.grid = Grid()
+        self.block = Block()
+        self.score = 0
+
+    def start_game(self):
+        self.run()
+
+    def draw_score(self):
+        font = pygame.font.SysFont("arial_narrow_7.ttf", 40)
+        scoretext = font.render(str(self.score), True, constants.COLORS["white"])
+        self.screen.blit(scoretext, (150, 20))
+
+    def run(self):
+        while self.running:
+            self.draw_score()
+            self.screen.blit(pygame.transform.scale(pygame.image.load("background.png"), (1500, 750)), (0, 0))
+            self.draw_score()
+            self.block.move_down()
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_RIGHT] and self.block.check_horizontal_lock(self.grid) != "right":
+                self.block.move_right()
+            if keys[pygame.K_LEFT] and self.block.check_horizontal_lock(self.grid) != "left":
+                self.block.move_left()
+            if keys[pygame.K_UP]:
+                self.block.rotate()
+            if self.block.check_lock(self.grid):
+                self.grid.add_to_grid(self.block)
+                self.block.reset()
+            self.running = self.block.check_game_over(self.grid)
+            self.grid.draw(self.screen)
+            self.block.draw(self.screen)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+            self.remove_full_row()
+            pygame.display.flip()
+            self.clock.tick(5)
+
+    def remove_full_row(self):
+        for i in range(self.grid.rows):
+            if self.full_row(i):
+                self.clear_row(i)
+                self.grid.grid.insert(0, self.grid.grid.pop(i))
+                self.score += 1
+
+    def clear_row(self, row):
+        for column in range(self.grid.columns):
+            self.grid.grid[row][column] = 0
+
+    def full_row(self, row):
+        for column in range(self.grid.columns):
+            if self.grid.grid[row][column] == 0:
+                return False
+        return True
+
+
+if __name__ == "__main__":
+    game = Game()
+    game.start_game()
