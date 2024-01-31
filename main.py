@@ -1,6 +1,8 @@
 import pygame
 import random
 import constants
+import ui_elements
+import json
 
 class Block:
     def __init__(self):
@@ -126,14 +128,42 @@ class Game:
         self.grid = Grid()
         self.block = Block()
         self.score = 0
+        self.menu_button = ui_elements.Button((100, 80), (255, 255, 255), "Play", (100, 150), self.start_game)
+        self.in_menu = True
+        with open("high_score.json", "r") as jsonfile:
+            self.highestscore = json.load(jsonfile)["highest_score"]
+        self.font = pygame.font.SysFont("arial_narrow_7.ttf", 40)
+        self.menu_title = self.font.render("TETISSE", True, constants.COLORS["white"])
+        self.high_score_title = self.font.render(f"Meilleur score: {self.highestscore}", True, constants.COLORS["white"])
+
 
     def start_game(self):
+        self.in_menu = False
         self.run()
 
+    def menu(self):
+        while self.in_menu:
+            self.screen.blit(pygame.transform.scale(pygame.image.load("menu_background.png"), (350, 600)), (0, 0))
+            self.screen.blit(self.menu_title, (90, 60))
+            self.screen.blit(self.high_score_title, (40, 500))
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.in_menu = False
+                if event.type == pygame.MOUSEBUTTONUP:
+                    self.menu_button.click()
+            self.menu_button.update(self.screen)
+            pygame.display.flip()
+            self.clock.tick(24)
+
     def draw_score(self):
-        font = pygame.font.SysFont("arial_narrow_7.ttf", 40)
-        scoretext = font.render(str(self.score), True, constants.COLORS["white"])
+        scoretext = self.font.render(str(self.score), True, constants.COLORS["white"])
         self.screen.blit(scoretext, (150, 20))
+
+    def save_score(self):
+        if self.score > self.highestscore:
+            with open("high_score.json", "w") as jsonfile:
+                json.dump({"highest_score": self.score}, jsonfile, indent=3)
+
 
     def run(self):
         while self.running:
@@ -181,4 +211,4 @@ class Game:
 
 if __name__ == "__main__":
     game = Game()
-    game.start_game()
+    game.menu()
