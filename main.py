@@ -146,6 +146,7 @@ class Game:
         self.font = pygame.font.SysFont("arial_narrow_7.ttf", 40)
         self.menu_title = self.font.render("TETISSE", True, constants.COLORS["white"])
         self.high_score_title = self.font.render(f"Meilleur score: {self.highestscore}", True, constants.COLORS["white"])
+        self.is_game_over = False
 
 
     def start_game(self):
@@ -177,6 +178,20 @@ class Game:
             with open("high_score.json", "w") as jsonfile:
                 json.dump({"highest_score": self.score}, jsonfile, indent=3)
 
+    def game_over(self):
+        self.menu_title = self.font.render("GAME OVER", True, constants.COLORS["white"])
+        self.running = False
+        while self.is_game_over:
+            pygame.mixer.music.play()
+            self.screen.blit(pygame.transform.scale(pygame.image.load("menu_background.png"), (350, 600)), (0, 0))
+            self.screen.blit(self.menu_title, (90, 60))
+            self.screen.blit(self.high_score_title, (40, 500))
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.save_score()
+                    self.is_game_over = False
+            pygame.display.flip()
+            self.clock.tick(24)
 
     def run(self):
         pygame.mixer.music.load("game_music.mp3")
@@ -191,7 +206,8 @@ class Game:
             game_over = not self.block.check_game_over(self.grid)
             if game_over:
                 self.save_score()
-                self.running = False
+                self.is_game_over = True
+                self.game_over()
             self.grid.draw(self.screen)
             self.block.draw(self.screen)
             for event in pygame.event.get():
@@ -202,6 +218,8 @@ class Game:
                         self.block.move_left()
                     if event.key == pygame.K_UP:
                         self.block.rotate()
+                    if event.key == pygame.K_DOWN:
+                        self.block.move_down()
                 if event.type == self.DOWNEVENT:
                     self.block.move_down()
                 if event.type == pygame.QUIT:
