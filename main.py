@@ -122,6 +122,9 @@ class Grid:
 class Game:
     def __init__(self):
         pygame.init()
+        downspeed = 5
+        self.DOWNEVENT = pygame.USEREVENT+1
+        pygame.time.set_timer(self.DOWNEVENT, (10//downspeed)*100)
         self.screen = pygame.display.set_mode((300, 630))
         self.clock = pygame.time.Clock()
         self.running = True
@@ -148,6 +151,7 @@ class Game:
             self.screen.blit(self.high_score_title, (40, 500))
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    self.save_score()
                     self.in_menu = False
                 if event.type == pygame.MOUSEBUTTONUP:
                     self.menu_button.click()
@@ -170,26 +174,31 @@ class Game:
             self.draw_score()
             self.screen.blit(pygame.transform.scale(pygame.image.load("background.png"), (1500, 750)), (0, 0))
             self.draw_score()
-            self.block.move_down()
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_RIGHT] and self.block.check_horizontal_lock(self.grid) != "right":
-                self.block.move_right()
-            if keys[pygame.K_LEFT] and self.block.check_horizontal_lock(self.grid) != "left":
-                self.block.move_left()
-            if keys[pygame.K_UP]:
-                self.block.rotate()
             if self.block.check_lock(self.grid):
                 self.grid.add_to_grid(self.block)
                 self.block.reset()
-            self.running = self.block.check_game_over(self.grid)
+            game_over = not self.block.check_game_over(self.grid)
+            if game_over:
+                self.save_score()
+                self.running = False
             self.grid.draw(self.screen)
             self.block.draw(self.screen)
             for event in pygame.event.get():
+                if event.type == pygame.KEYUP:
+                    if event.key == pygame.K_RIGHT and self.block.check_horizontal_lock(self.grid) != "right":
+                        self.block.move_right()
+                    if event.key == pygame.K_LEFT and self.block.check_horizontal_lock(self.grid) != "left":
+                        self.block.move_left()
+                    if event.key == pygame.K_UP:
+                        self.block.rotate()
+                if event.type == self.DOWNEVENT:
+                    self.block.move_down()
                 if event.type == pygame.QUIT:
+                    self.save_score()
                     self.running = False
             self.remove_full_row()
             pygame.display.flip()
-            self.clock.tick(5)
+            self.clock.tick(50)
 
     def remove_full_row(self):
         for i in range(self.grid.rows):
