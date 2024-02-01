@@ -6,7 +6,7 @@ import json
 
 class Block:
     def __init__(self):
-        self.lock_sound = pygame.mixer.Sound("lock_effect.mp3")
+        self.lock_sound = pygame.mixer.Sound("assets/sound/lock_effect.mp3")
         self.lock_sound.set_volume(0.3)
         self.color = constants.COLORS[random.choice(list(constants.COLORS))]
         self.gridposition = [0, 5]
@@ -127,11 +127,11 @@ class Game:
     def __init__(self):
         pygame.init()
         downspeed = 5
-        pygame.mixer.music.load("menu_music.mp3")
+        pygame.mixer.music.load("assets/sound/menu_music.mp3")
         pygame.mixer.music.set_volume(0.2)
         self.DOWNEVENT = pygame.USEREVENT+1
         pygame.time.set_timer(self.DOWNEVENT, (10//downspeed)*100)
-        self.row_sound = pygame.mixer.Sound("row_sound.mp3")
+        self.row_sound = pygame.mixer.Sound("assets/sound/row_sound.mp3")
         self.row_sound.set_volume(0.3)
         self.screen = pygame.display.set_mode((300, 630))
         self.clock = pygame.time.Clock()
@@ -142,7 +142,7 @@ class Game:
         self.menu_button = ui_elements.Button((100, 80), (255, 255, 255), "Play", (100, 150), self.start_game)
         self.in_menu = True
         with open("high_score.json", "r") as jsonfile:
-            self.highestscore = json.load(jsonfile)["highest_score"]
+            self.highestscore = json.load(jsonfile)["assets/font/highest_score"]
         self.font = pygame.font.SysFont("arial_narrow_7.ttf", 40)
         self.menu_title = self.font.render("TETISSE", True, constants.COLORS["white"])
         self.high_score_title = self.font.render(f"Meilleur score: {self.highestscore}", True, constants.COLORS["white"])
@@ -156,7 +156,7 @@ class Game:
     def menu(self):
         pygame.mixer.music.play()
         while self.in_menu:
-            self.screen.blit(pygame.transform.scale(pygame.image.load("menu_background.png"), (350, 600)), (0, 0))
+            self.screen.blit(pygame.transform.scale(pygame.image.load("assets/images/menu_background.png"), (350, 600)), (0, 0))
             self.screen.blit(self.menu_title, (90, 60))
             self.screen.blit(self.high_score_title, (40, 500))
             for event in pygame.event.get():
@@ -183,7 +183,7 @@ class Game:
         self.running = False
         while self.is_game_over:
             pygame.mixer.music.play()
-            self.screen.blit(pygame.transform.scale(pygame.image.load("menu_background.png"), (350, 600)), (0, 0))
+            self.screen.blit(pygame.transform.scale(pygame.image.load("assets/images/menu_background.png"), (350, 600)), (0, 0))
             self.screen.blit(self.menu_title, (90, 60))
             self.screen.blit(self.high_score_title, (40, 500))
             for event in pygame.event.get():
@@ -194,11 +194,11 @@ class Game:
             self.clock.tick(24)
 
     def run(self):
-        pygame.mixer.music.load("game_music.mp3")
+        pygame.mixer.music.load("assets/sound/game_music.mp3")
         pygame.mixer.music.play()
         while self.running:
             self.draw_score()
-            self.screen.blit(pygame.transform.scale(pygame.image.load("background.png"), (1500, 750)), (0, 0))
+            self.screen.blit(pygame.transform.scale(pygame.image.load("assets/images/background.png"), (1500, 750)), (0, 0))
             self.draw_score()
             if self.block.check_lock(self.grid):
                 self.grid.add_to_grid(self.block)
