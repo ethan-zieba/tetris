@@ -38,9 +38,9 @@ class Block:
              [(0, 0), (0, 1), (1, 0), (1, 1)]],
             # S
             [[(0, 1), (0, 2), (1, 0), (1, 1)],
+             [(0, 0), (2, 1), (1, 0), (1, 1)],
              [(0, 1), (0, 2), (1, 0), (1, 1)],
-             [(0, 1), (0, 2), (1, 0), (1, 1)],
-             [(0, 1), (0, 2), (1, 0), (1, 1)]],
+             [(0, 0), (2, 1), (1, 0), (1, 1)]],
             # Z
             [[(0, 0), (0, 1), (1, 1), (1, 2)],
              [(0, 0), (0, 1), (1, 1), (1, 2)],
@@ -66,7 +66,6 @@ class Block:
     def rotate(self):
         self.current_rotation = self.current_rotation + 1 if self.current_rotation < 3 else 0
         self.shape = self.get_shape(self.shapeindex)[self.current_rotation]
-
 
     def move_down(self):
         self.gridposition[0] += 1
@@ -102,6 +101,7 @@ class Block:
         if self.gridposition[0] == 0 and self.check_lock(grid):
             return False
         return True
+
 
 class Grid:
     def __init__(self):
@@ -142,12 +142,11 @@ class Game:
         self.menu_button = ui_elements.Button((100, 80), (255, 255, 255), "Play", (100, 150), self.start_game)
         self.in_menu = True
         with open("high_score.json", "r") as jsonfile:
-            self.highestscore = json.load(jsonfile)["assets/font/highest_score"]
+            self.highestscore = json.load(jsonfile)["highest_score"]
         self.font = pygame.font.SysFont("arial_narrow_7.ttf", 40)
         self.menu_title = self.font.render("TETISSE", True, constants.COLORS["white"])
         self.high_score_title = self.font.render(f"Meilleur score: {self.highestscore}", True, constants.COLORS["white"])
         self.is_game_over = False
-
 
     def start_game(self):
         self.in_menu = False
