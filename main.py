@@ -6,6 +6,8 @@ import json
 
 class Block:
     def __init__(self):
+        self.lock_sound = pygame.mixer.Sound("lock_effect.mp3")
+        self.lock_sound.set_volume(0.3)
         self.color = constants.COLORS[random.choice(list(constants.COLORS))]
         self.gridposition = [0, 5]
         self.shapeindex = random.randint(0, 5)
@@ -78,8 +80,10 @@ class Block:
     def check_lock(self, grid):
         for coord in self.shape:
             if self.gridposition[0] + coord[0] + 1 >= 20:
+                self.lock_sound.play()
                 return True
             if grid.grid[self.gridposition[0] + coord[0] + 1][self.gridposition[1] + coord[1]]== 1:
+                self.lock_sound.play()
                 return True
 
     def check_horizontal_lock(self, grid):
@@ -123,8 +127,12 @@ class Game:
     def __init__(self):
         pygame.init()
         downspeed = 5
+        pygame.mixer.music.load("menu_music.mp3")
+        pygame.mixer.music.set_volume(0.2)
         self.DOWNEVENT = pygame.USEREVENT+1
         pygame.time.set_timer(self.DOWNEVENT, (10//downspeed)*100)
+        self.row_sound = pygame.mixer.Sound("row_sound.mp3")
+        self.row_sound.set_volume(0.3)
         self.screen = pygame.display.set_mode((300, 630))
         self.clock = pygame.time.Clock()
         self.running = True
@@ -145,6 +153,7 @@ class Game:
         self.run()
 
     def menu(self):
+        pygame.mixer.music.play()
         while self.in_menu:
             self.screen.blit(pygame.transform.scale(pygame.image.load("menu_background.png"), (350, 600)), (0, 0))
             self.screen.blit(self.menu_title, (90, 60))
@@ -170,6 +179,8 @@ class Game:
 
 
     def run(self):
+        pygame.mixer.music.load("game_music.mp3")
+        pygame.mixer.music.play()
         while self.running:
             self.draw_score()
             self.screen.blit(pygame.transform.scale(pygame.image.load("background.png"), (1500, 750)), (0, 0))
@@ -184,7 +195,7 @@ class Game:
             self.grid.draw(self.screen)
             self.block.draw(self.screen)
             for event in pygame.event.get():
-                if event.type == pygame.KEYUP:
+                if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RIGHT and self.block.check_horizontal_lock(self.grid) != "right":
                         self.block.move_right()
                     if event.key == pygame.K_LEFT and self.block.check_horizontal_lock(self.grid) != "left":
@@ -203,6 +214,7 @@ class Game:
     def remove_full_row(self):
         for i in range(self.grid.rows):
             if self.full_row(i):
+                self.row_sound.play()
                 self.clear_row(i)
                 self.grid.grid.insert(0, self.grid.grid.pop(i))
                 self.score += 1
